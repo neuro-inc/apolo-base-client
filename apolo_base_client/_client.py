@@ -2,7 +2,7 @@ import asyncio
 import contextlib
 from collections.abc import AsyncIterator, Mapping
 from types import TracebackType
-from typing import Any, Optional, Type, Union
+from typing import Any
 
 from aiohttp import ClientResponse, ClientResponseError, ClientSession, TraceConfig
 from aiohttp.hdrs import AUTHORIZATION
@@ -19,13 +19,13 @@ class HttpClient:
     def __init__(
         self,
         *,
-        base_url: Union[str, URL],
-        auth0_url: Union[str, URL],
+        base_url: str | URL,
+        auth0_url: str | URL,
         client_id: str,
         audience: str,
         secret: str,
         expiration_ratio: float = 0.75,
-        trace_configs: Optional[list[TraceConfig]] = None,
+        trace_configs: list[TraceConfig] | None = None,
     ) -> None:
         self._auth0_url = URL(auth0_url)
         self._base_url = URL(base_url)
@@ -45,13 +45,13 @@ class HttpClient:
 
     async def __aexit__(
         self,
-        exc_typ: Type[BaseException],
+        exc_typ: type[BaseException],
         exc_val: BaseException,
         exc_tb: TracebackType,
     ) -> None:
         await self.close()
 
-    def is_expired(self, *, now: Optional[float] = None) -> bool:
+    def is_expired(self, *, now: float | None = None) -> bool:
         if now is None:
             loop = asyncio.get_running_loop()
             now = loop.time()
@@ -81,9 +81,9 @@ class HttpClient:
         method: str,
         path: str,
         *,
-        headers: Optional[CIMultiDict[str]] = None,
+        headers: CIMultiDict[str] | None = None,
         json: Any = None,
-        params: Optional[Mapping[str, str]] = None,
+        params: Mapping[str, str] | None = None,
         raise_for_status: bool = True,
     ) -> AsyncIterator[ClientResponse]:
         if self.is_expired():
